@@ -25,7 +25,15 @@ Vue.use(VueRouter)
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/Users.vue')
-  }
+  },
+  {
+    path: '/users_2',
+    name: 'Users_2',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/Users_2.vue')
+  }  
 ]
 
 const router = new VueRouter({
