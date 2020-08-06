@@ -9,6 +9,7 @@
             @submit.prevent="enviarFormulario"
           >
             <v-card ref="form">
+              <v-card-title>Registro de usuarios</v-card-title>
               <v-card-text>
                 <v-container>
                   <v-row>
@@ -115,9 +116,8 @@
                     </v-col>
                   </v-row>
                 </v-container>
+                <v-divider class="mt-12"></v-divider>
               </v-card-text>
-              <v-divider class="mt-12"></v-divider>
-
               <v-card-actions justify="center">
                 <v-btn type="submit">
                   Enviar
@@ -129,6 +129,7 @@
       </v-row>
       <v-row>
         <v-col>
+          <!--
           <v-list disabled>
             <v-subheader>REPORTS</v-subheader>
             <v-list-item-group v-model="item" color="primary">
@@ -143,6 +144,96 @@
               </v-list-item>
             </v-list-item-group>
           </v-list>
+          -->
+          <v-data-table
+            :headers="headers"
+            :items="users"
+            class="elevation-4"
+          >
+            <template v-slot:top>
+              <v-toolbar flat color="white">
+                <v-toolbar-title>Usuarios registrados</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-dialog v-model="dialog" max-width="500px">
+                  <template v-slot:activator="{ on, attrs }">
+                    <!--
+                    <v-btn
+                      color="primary"
+                      dark
+                      class="mb-2"
+                      v-bind="attrs"
+                      v-on="on"
+                      >New Item</v-btn
+                    >
+                    -->
+                  </template>
+                  <v-card>
+                    <v-card-title>
+                      <span class="headline">{{ formTitle }}</span>
+                    </v-card-title>
+
+                    <v-card-text>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="editedItem.firstname"
+                              label="Firstname"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="editedItem.lastname"
+                              label="lastname"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="editedItem.email"
+                              label="E-mail"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="editedItem.date"
+                              label="Birth date"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="editedItem.country"
+                              label="Country"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card-text>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="blue darken-1" text @click="close"
+                        >Cancel</v-btn
+                      >
+                      <v-btn color="blue darken-1" text @click="save"
+                        >Save</v-btn
+                      >
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-toolbar>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-icon small class="mr-2" @click="editItem(item)">
+                mdi-pencil
+              </v-icon>
+              <v-icon small @click="deleteItem(item)">
+                mdi-delete
+              </v-icon>
+            </template>
+            <template v-slot:no-data>
+              <v-btn color="primary" @click="initialize">Reset</v-btn>
+            </template>
+          </v-data-table>
         </v-col>
       </v-row>
     </v-col>
@@ -151,6 +242,7 @@
 <script>
 export default {
   data: () => ({
+    /*
     item: 1,
     items: [
       {
@@ -172,6 +264,7 @@ export default {
         icon: "mdi-alpha-s",
       },
     ],
+    */
     valid: false,
     firstname: "",
     lastname: "",
@@ -405,14 +498,57 @@ export default {
       "Zimbabwe",
     ],
 
+    dialog: false,
+    headers: [
+      {text: "Firstname", align: "start", value: "firstname"},
+      //{ text: 'Calories', value: 'calories' },
+      { text: "Apellido", value: "lastname" },
+      //{ text: 'Fat (g)', value: 'fat' },
+      { text: "E-mail", value: "email" },
+      //{ text: 'Carbs (g)', value: 'carbs' },
+      { text: "Fecha de nacimiento", value: "date" },
+      //{ text: 'Protein (g)', value: 'protein' },
+      { text: "Pais de nacionalidad", value: "country" },
+      { text: "Actions", value: "actions", sortable: false },
+    ],
+    users: [],
+    editedIndex: -1,
+    editedItem: {
+      firstname: "",
+      lastname: 0,
+      email: 0,
+      date: 0,
+      country: 0,
+    },
+    defaultItem: {
+      firstname: "",
+      lastname: 0,
+      email: 0,
+      date: 0,
+      country: 0,
+    },
   }),
+  computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    },
+  },
 
+  watch: {
+    dialog(val) {
+      val || this.close();
+    },
+  },
+
+  created() {
+    this.initialize();
+  },
   methods: {
     enviarFormulario() {
       if (this.$refs.formUsers.validate()) {
         alert("formulario correcto");
-        this.items.push({
-          name: this.firstname,
+        this.users.push({
+          firstname: this.firstname,
           lastname: this.lastname,
           email: this.email,
           password: this.password,
@@ -421,8 +557,65 @@ export default {
         });
       }
     },
-
     allowedDates: (val) => parseInt(val.split("-")[0], 10) <= 2019,
+
+    initialize() {
+      this.users = [
+        {
+          firstname: "Fabian",
+          lastname: "Salgado",
+          email: "fasalgad@f.cl",
+          date: "1990-01-01",
+          country: "Chile",
+          icon: "mdi-air-filter",
+        },
+        {
+          firstname: "José",
+          lastname: "Veloso",
+          email: "jveloso@f.cl",
+          date: "2015-13-05",
+          country: "Mexico",
+          icon: "mdi-adobe-acrobat",
+        },
+        {
+          firstname: "Samuel",
+          lastname: "Salgado",
+          email: "samuel5@f.cl",
+          date: "1715-09-24",
+          country: "Panama",
+          icon: "mdi-alpha-s",
+        },
+      ];
+    },
+
+    editItem(item) {
+      this.editedIndex = this.users.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+
+    deleteItem(item) {
+      const index = this.users.indexOf(item);
+      confirm("Are you sure you want to delete this item?") &&
+        this.users.splice(index, 1);
+    },
+
+    close() {
+      this.dialog = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    save() {
+      if (this.editedIndex > -1) {
+        Object.assign(this.users[this.editedIndex], this.editedItem);
+      } else {
+        this.users.push(this.editedItem);
+      }
+      this.close();
+    },
   },
 };
 </script>
